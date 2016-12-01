@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<script data-require="jquery@*" data-semver="2.0.3" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+  <!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>-->
+	<!--<script src="fhir-server-settings.js"></script>-->
+</head>
+
+<body>
+<link
+ href="https://lforms-service.nlm.nih.gov/lforms-versions/8.1.1/styles/lforms.min.css"
+ media="screen" rel="stylesheet" />
+<p id="LForms Demo">Using LForms</p>
+<div id="SurveyFormContainer"></div>
+<div id="SurveyFormContainer2"></div>
+
+<script src="https://lforms-service.nlm.nih.gov/lforms-versions/7.0.0/lforms.min.js"></script>
+<script>
+window.formDef = new Array();
+var section = 0;
+// This is the form definition
+window.formDef[0] = {
+  code: "X-001",
+  template: "list",
+  name: "CDC Population Health Informatics Survey",
+   templateOptions: {
+    obrHeader: false,
+    hideHeader: true,
+    hideUnits: true,
+    displayControl: {"questionLayout": "vertical"}, 
+    obxTableColumns: [{
+       name: "Question",
+       displayControl: {
+          "colCSS": [{"name":"width","value":"30%"}]}},   
+      {name: null,
+       displayControl: {
+          "colCSS": [{"name":"width","value":"0%"}]}},
+      {name: "Value",
+       displayControl: {
+          "colCSS": [{"name":"width","value":"30%"}]}},
+      {name: "Units",
+       displayControl: {
+          "colCSS": [{"name":"width","value":"30%"}]}
+    }]
+  },
+  items: [{
+    "questionCode": "X-002",
+    "question": "Would you say that in general your health is-",
+    "answerCardinality": {"min": "1", "max": "1"},
+    "displayControl": {
+        questionLayout: "horizontal",
+        answerLayout: "list",
+      },
+    "answers": [
+      {text: "Excellent", code: "0"},
+      {text: "Very Good", code: "1"},
+      {text: "Good", code: "2"},
+      {text: "Fair", code: "3"},
+      {text: "Poor", code: "4"}
+    ],
+    "dataType": "CNE"
+  },
+  {
+    "questionCode": "X-003",
+    "question": "Now thinking about your physical health, which includes physical illness and injury, for how many days during the past 30 days was your physical health not good?",
+    "displayControl": {
+        answerLayout: "list"
+      },
+    "answers": [
+      {text: "Enter days(0-31)", code: "1", other: "REAL", range: "0-31"},
+      {text: "Don't Know", code: "2"},
+      {text: "Refuse", code: "3"}
+    ],
+    "dataType": "CNE"
+  },
+  {
+      "questionCode": "q1a",
+      "answerCardinality": {"min": "0", "max": "*"},
+      "question": "Answer list layout --CNE",
+      "copyrightNotice": "a notice",
+      "codingInstructions": "coding instructions",
+      "dataType": "CNE",
+      "displayControl": {
+        "answerLayout": "radio"
+      },
+      "answers": [
+        {"code": "c1", "text": "Answer X"},
+        {"code": "c2", "text": "Answer Y"},
+        {"code": "c3", "text": "Answer Z"}
+      ]
+    }]
+
+};
+
+window.formDef[1] = {
+  code: "X-001",
+  template: "list",
+  name: "CDC Population Health Informatics Survey",
+   templateOptions: {
+    obrHeader: false,
+    hideHeader: true,
+    hideUnits: true,
+    displayControl: {"questionLayout": "vertical"}, 
+    obxTableColumns: [{
+       name: "Question",
+       displayControl: {
+          "colCSS": [{"name":"width","value":"30%"}]}},   
+      {name: null,
+       displayControl: {
+          "colCSS": [{"name":"width","value":"0%"}]}},
+      {name: "Value",
+       displayControl: {
+          "colCSS": [{"name":"width","value":"30%"}]}},
+      {name: "Units",
+       displayControl: {
+          "colCSS": [{"name":"width","value":"30%"}]}
+    }]
+  },
+  items: [{
+    "questionCode": "X-005",
+    "question": "Would you say that in general your health is-",
+    "answerCardinality": {"min": "1", "max": "1"},
+    "displayControl": {
+        questionLayout: "horizontal",
+        answerLayout: "list",
+      },
+    "answers": [
+      {text: "Excellent", code: "0"},
+      {text: "Very Good", code: "1"},
+      {text: "Good", code: "2"},
+      {text: "Fair", code: "3"},
+      {text: "Poor", code: "4"}
+    ],
+    "dataType": "CNE"
+  }]
+};
+
+LForms.Util.addFormToPage('formDef['+section+']', 'SurveyFormContainer');
+function displayResults()
+{
+  var data;
+  for(var i = 0; i < formDef.length; i++)
+  {
+    LForms.Util.addFormToPage('formDef['+i+']', 'SurveyFormContainer');
+    data = LForms.Util.getUserData('body', true);
+    console.log(data);
+    console.log(formDef[i]);
+  }
+  LForms.Util.addFormToPage('formDef['+section+']', 'SurveyFormContainer');
+}
+
+function nextSection()
+{
+  section++;
+  LForms.Util.addFormToPage('formDef['+section+']', 'SurveyFormContainer');
+}
+
+function prevSection()
+{
+  section--;
+  LForms.Util.addFormToPage('formDef['+section+']', 'SurveyFormContainer');
+}
+</script>
+<button onclick="displayResults()">Get Results</button> Results are output to console!<br>
+<button onclick="prevSection()">Prev Section</button>
+<button onclick="nextSection()">Next Section</button>
+
+</body>
+</html>

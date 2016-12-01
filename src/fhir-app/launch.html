@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="smart/fhir-client.js"></script>
+    <script>
+      FHIR.oauth2.authorize({
+        "client_id": "80e714e6-455c-4e3e-a132-9dcf0e90db08",
+        "scope":  "patient/*.read"
+      });
+    </script>
+  </head>
+  Loading...ss
+    <ul id="med_list"></ul>
+
+      <script src="smart/get-data.js"></script>
+</html>

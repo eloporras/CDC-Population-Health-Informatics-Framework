@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset=utf-8 />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Survey</title>
+    <!-- FHIR Scripts -->
+    <script src="smart/fhir-server-settings.js"></script>
+
+    <script type='text/javascript' src='http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js'></script>
+    <link href="https://lforms-service.nlm.nih.gov/lforms-versions/7.0.0/styles/lforms.min.css" media="screen" rel="stylesheet" />
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css" type="text/css" />
+    <!-- Latest compiled and minified CSS -->
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">-->
+
+    <!-- Optional theme -->
+    <!--<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">-->
+    
+
+    <!--<script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>-->
+    <!-- Latest compiled and minified JavaScript -->
+    <!--<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>-->
+
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script> 
+
+<style>
+
+.headertable
+{
+    width:100%;
+    border-collapse: collapse;
+    border:none;
+}
+
+.headertable td, .headertable th{
+    padding: 10px;
+}
+
+.headertable .user_cell {
+    width:300px; 
+    text-align:left;
+    }
+.headertable .comp_cell {
+    width:200px;
+    text-align:right;
+    }
+
+.surveytable{}
+
+.surveytable
+{
+    width:75%;
+    border-collapse: collapse;
+    text-align:center;
+    margin-left: auto; 
+    margin-right: auto;
+}
+
+.surveytable th, .surveytable td
+{
+    width:33%;
+    padding: 10px;
+    border:1px solid black;
+}
+
+.surveytable .title{
+    background-color: rgb(255,163, 130);
+}
+
+.surveytable .question_title{
+    border-bottom: none;
+}
+
+.surveytable .question_cell{
+    height:400px;
+    border-top: none;
+    border-bottom: none;
+    border-right:none;
+}
+
+.surveytable .response_cell{
+    height:250px;
+    border-top: none;
+}
+
+.surveytable .image_cell
+{
+    border-top: none;
+    border-left: none;
+    border-bottom: none;
+}
+
+
+</style>
+</head>
+<body>
+    <header>
+        <table class="headertable">
+            <tr>
+                <td class = "user_cell">
+                    <div>
+                    <img src="images/wrench.png" align="left" style="height:18px">
+                     <h4><span id="patient_name">...</span></h4>
+                     </div
+                </td>
+                <td class = "comp_cell">
+                    <img src="http://www.healthy.arkansas.gov/programsServices/healthStatistics/Brfss/PublishingImages/BRFSSlogo.jpg" alt="Behaviorial Risk Factor Surveillance System" align="right">
+                </td>
+            </tr>
+        </table>
+    </header>
+    <br>
+    <table class="surveytable">
+        <tr>
+            <th class = "title", colspan="3">Behavioral Risk Factor Surveillance System</th>
+        </tr>
+        <tr><td class = "question_cell", colspan = "2"><div id="SurveyFormContainer"><img src="images/loading_icon.gif" align="center"></div></td>
+            <td class = "image_cell"><img src="images/HeartLine.png" align="center"></td>
+        </tr>
+        <!--<tr><td class = "response_cell", colspan = "3">Possible place for a loaded response...</td></tr>-->
+        <tr>
+            <td><button id="bt_prev_section" disabled><img src="images/LeftArrow.png" align="left"></button></td>
+            <td>
+                <button id="bt_survey_check" disabled><img src="images/Check.png" align="center"></button>
+                <button id="bt_survey_stat" disabled><img src="images/Clipboard.png" align="center"></button>
+                <button id="bt_move_top" disabled><img src="images/Refresh.png" align="center"></button>
+            </td>
+            <td><button id="bt_next_section" disabled><img src="images/RightArrow.png" align="right"></button></td>
+        </tr>
+    </table>
+    <!-- Watch out Jquery UI must be loaded after Lforms.-->
+    <script src="https://lforms-service.nlm.nih.gov/lforms-versions/7.0.0/lforms.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript">
+        // Setup intial variables
+        var request_survey_list;
+        var survey_active = false;
+        var section_count = 0;
+        var oSurvey;
+        window.formDef = {};
+        window.listDef = {};
+
+        // Load functions when document is loaded 
+        $(document).ready(function()
+        {
+            function surveyLoadListener () {
+                //console.log(this.response);
+
+                // Load Survey when it's ready
+                if(this.response != -1)
+                {
+                    section_count = 0;
+                    window.formDef = JSON.parse(this.response);
+                    LForms.Util.addFormToPage('formDef['+section_count+']', 'SurveyFormContainer');
+                    changeSurveyActiveState(true);
+                }
+
+            }
+
+            // Survey Form - Loaded after survey has been selected.
+            oSurvey = new XMLHttpRequest(); //New request object
+   
+            oSurvey.addEventListener("load", surveyLoadListener);
+
+            oSurvey.load = function() {
+        
+                //This is where you handle what to do with the response.
+                //The actual data is found on this.responseText
+                data = LForms.Util.getUserData('body', true)['itemsData'][0]['value']['code'];
+                $('#SurveyFormContainer').html('<img src="images/loading_icon.gif" align="center">');
+                oSurvey.open("get", "http://localhost/sl_hp/php/getSurvey.php?survey_id="+data, true);
+                oSurvey.send();
+
+            };
+
+            // Survey Selector Form - Loaded First
+            function reqListener () {
+                //console.log(this.response);
+            }
+            request_survey_list = new XMLHttpRequest(); //New request object
+   
+            request_survey_list.addEventListener("load", reqListener);
+            request_survey_list.open("get", "http://localhost/sl_hp/php/getSurveyList.php", true);
+            request_survey_list.send();
+
+            request_survey_list.onload = function() {
+
+                if(this.response != -1)
+                {
+                    window.listDef = JSON.parse(this.response);
+                    LForms.Util.addFormToPage('listDef', 'SurveyFormContainer');
+                    
+                    // Button
+                    var sb = $('<input type="button" value="Take Survey"/>');
+                    sb.on('click', function(){
+                      oSurvey.load();
+                    });
+                    $('#SurveyFormContainer').append(sb);
+                }
+            
+            };
+
+            $('#bt_next_section').click(function() {
+                if(section_count+1 < formDef.length)
+                {
+                    section_count++;
+                    LForms.Util.addFormToPage('formDef['+section_count+']', 'SurveyFormContainer');
+                }else $.fn.survey_submission('open')
+                
+            });
+
+            $('#bt_prev_section').click(function() {
+                if(section_count > 0)
+                {
+                    section_count--;
+                    LForms.Util.addFormToPage('formDef['+section_count+']', 'SurveyFormContainer');
+                }
+                
+            });
+        });
+
+
+        // Survey Taker button
+        $ .fn.takeSurveyButton = function(element) {
+            var sb = $('<input type="button" value="Take Survey"/>');
+            sb.on('click', function(){
+              oSurvey();
+            });
+            $(element).append(sb);
+        }
+
+        // Reset Survey
+        function gotoSurveySelection()
+        {
+            request_survey_list.onload();
+        }
+
+        // Check if questions are answered
+        function getAnswerState(section)
+        {
+            var answered_questions = 0;
+            var unanswered_questions = 0;
+            var first_unfinished_question = "None";
+            
+            // Get answered/unanswered questions
+            for(var i = 0; i < formDef[section]['items'].length; i++)
+            {
+                var answered = false;
+                if(formDef[section]['items'][i].hasOwnProperty('value') && formDef[section]['items'][i]['value'].hasOwnProperty('other'))
+                {
+                    var range = formDef[section]['items'][i]['value']['range'].split(",");
+                    var value = formDef[section]['items'][i]['valueOther'];
+
+                    if(range.length != 2 || isNaN(range[0]) || isNaN(range[1])) // Is range valid? If not, accept any answer
+                    {
+                        if(value.length > 0)answered = true;
+                    }else if(!isNaN(value) && parseInt(value) >= parseInt(range[0]) && parseInt(value) <= parseInt(range[1]))
+                    {
+                        answered = true;
+                    }
+
+                }else if(formDef[section]['items'][i].hasOwnProperty('value'))answered = true;
+                
+                // Check if we have an answer or not
+                if(!answered)
+                {
+                    if(first_unfinished_question == "None")first_unfinished_question = formDef[section]['items'][i]['question'];
+                    unanswered_questions++;
+                }else answered_questions++;
+            }
+
+            // Return an object holding these variables
+            return {answered_questions:answered_questions, unanswered_questions:unanswered_questions, first_unfinished_question:first_unfinished_question};
+        }
+
+        // Controls survey state
+        function changeSurveyActiveState(state)
+        {
+            survey_active = state;
+            if(state)
+            {
+               $('#bt_next_section').prop('disabled', false);
+               $('#bt_prev_section').prop('disabled', false); 
+               $('#bt_survey_check').prop('disabled', false); 
+               $('#bt_survey_stat').prop('disabled', false); 
+               $('#bt_move_top').prop('disabled', false); 
+            }else
+            {
+               $('#bt_next_section').prop('disabled', true);
+               $('#bt_prev_section').prop('disabled', true);
+               $('#bt_survey_check').prop('disabled', true); 
+               $('#bt_survey_stat').prop('disabled', true); 
+               $('#bt_move_top').prop('disabled', true); 
+            }
+        }
+
+        // Displays question status in dialog
+        $('#bt_survey_check').click(function() {
+            var this_section = getAnswerState(section_count);
+            
+            var dialog_check_div = $('#dialog-check');
+            if(dialog_check_div.length)$('#dialog-check').remove();
+            dialog_check_div = document.createElement('dialog-check');
+            dialog_check_div.id = 'dialog-check';
+            dialog_check_div.title = listDef['items'][0]['value']['text'];
+            dialog_check_div.innerHTML = '<p>'+
+                                    'Answered Questions: ' + this_section['answered_questions'] +'<br>'+
+                                    'Unanswered Quesitons: ' + this_section['unanswered_questions'] +'<br>'+
+                                    'Latest unanswered question: ' + this_section['first_unfinished_question'] +'<br>'+
+                                    '</p>';
+            $('body').append(dialog_check_div);
+
+            $( function() {
+                $('#dialog-check').dialog();
+            });
+        });
+
+        // Displays Survey Stats to the user
+        $('#bt_survey_stat').click(function() {
+            var current_section = section_count+1;
+            var total_sections = formDef.length;
+            var total_questions = 0;
+            var current_questions = formDef[section_count]['items'].length;
+            for(var i = 0; i < formDef.length; i++)total_questions += formDef[i]['items'].length;
+            
+            
+            var dialog_stat_div = $('#dialog-stat');
+            if(dialog_stat_div.length)$('#dialog-stat').remove();
+            dialog_stat_div = document.createElement('dialog-stat');
+            dialog_stat_div.id = 'dialog-stat';
+            dialog_stat_div.title = listDef['items'][0]['value']['text'];
+            dialog_stat_div.innerHTML = '<p>'+
+                                    'Total Sections: ' + total_sections +'<br>'+
+                                    'Total Questions: ' + total_questions +'<br>'+
+                                    'Current Section: ' + current_section +'<br>'+
+                                    'Questions in this section: ' + current_questions +'<br>'+
+                                    '</p>';
+            $('body').append(dialog_stat_div);
+
+            $( function() {
+                $( "#dialog-stat" ).dialog();
+            });
+        });
+
+        // Move scroll bar back to top
+        $('#bt_move_top').click(function() {
+            $("html, body").animate({ scrollTop: 0 }, "slow");
+        });
+
+        // Survey Submission Dialog Box
+        $ .fn.survey_submission = function() {
+          
+          var valid_submission = true;
+          var survey_status = Array();
+
+          // Get answer state for entire survey
+          for(var i = 0; i < formDef.length; i++)survey_status.push(getAnswerState(i));
+          
+          // Check for incomplete sections
+          for(var i = 0; i < formDef.length; i++)
+            if(survey_status[i]['unanswered_questions'] > 0)
+            {
+                valid_submission = false;
+                break;
+            }
+
+          // If submission is not complete
+          if(!valid_submission)
+          {
+            var nc_survey_div = $('#dialog-incomplete');
+
+            if(nc_survey_div.length)$('#dialog-incomplete').remove();
+            nc_survey_div = document.createElement('dialog-incomplete');
+            nc_survey_div.id = 'dialog-incomplete';
+            nc_survey_div.title = "Incomplete Survey";
+            nc_survey_div.innerHTML = '<p>';
+            for(var i = 0; i < formDef.length; i++)
+            {
+                nc_survey_div.innerHTML += 'Section '+ (i+1) +': ';
+                (survey_status[i]['unanswered_questions'] > 0) ? nc_survey_div.innerHTML += 'Incomplete'+'<br>' : nc_survey_div.innerHTML += 'Complete'+'<br>' ;
+            }
+            nc_survey_div.innerHTML += '<br>You can validate if a section is complete by using the Check button in the corresponding section'+'</p>';
+            $('body').append(nc_survey_div);
+
+            $( function() {
+                $( "#dialog-incomplete" ).dialog({
+                    modal: true
+                });
+            });
+            return;
+          }
+
+          // Grab element
+          var submit_div = $('#dialog-survey-submit');
+
+          // Remove old element if it exists and add new one
+          // Done due to centering issue after intialization.
+          if(submit_div.length)$('#dialog-survey-submit').remove();
+          submit_div = document.createElement('dialog-survey-submit');
+          submit_div.id = 'dialog-survey-submit';
+          submit_div.title = "End of Survey";
+          submit_div.innerHTML = '<p><span class="ui-icon ui-icon-alert" style="float:left; margin:12px 12px 20px 0;"></span>Submit Now?</p>';
+          $('body').append(submit_div);
+          
+           // Create Dialog Box
+          $( '#dialog-survey-submit' ).dialog({
+            resizable: false,
+            height: "auto",
+            width: 400,
+            modal: true,
+            position: {my: "center", at: "center"},
+            draggable: true,
+            buttons: {
+              "Submit": function() {
+                section_count = formDef.length;
+                MethodOutcome = smart.api.create({resource: getQuestionnaireResponse()});
+                console.log(MethodOutcome);
+                changeSurveyActiveState(false);
+                $('#SurveyFormContainer').text("Thank you for your time.");
+                setTimeout(gotoSurveySelection, 5000);
+                $( this ).dialog( "close" );
+              },
+              "Return to Survey": function() {
+                $( this ).dialog( "close" );
+              }
+            }
+          });
+    
+        };
+
+        function getQuestionnaireResponse()
+        {
+            // Create basic form
+            var qr = {
+              resourceType: "QuestionnaireResponse",
+              status: "completed",
+              subject: listDef['items'][0]['value']['text'],
+              source: {reference: "Patient/" + pt.id},
+              group: Array()
+            };
+
+            for(var i = 0; i < formDef.length; i++)
+            {
+                qr['group'].push({title: formDef[i]['name'], question: Array()});
+                for(var j = 0; j < formDef[i]['items'].length; j++)
+                {
+                    qr['group'][i]['question'].push({text: formDef[i]['items'][j]['question']});
+                    if(!formDef[i]['items'][j]['value'].hasOwnProperty('other'))
+                      qr['group'][i]['question'][j]['answer'] = {valueString: formDef[i]['items'][j]['value']['text'], valueCoding: {display: formDef[i]['items'][j]['value']['code']}};
+                    else
+                      qr['group'][i]['question'][j]['answer'] = {valueString: formDef[i]['items'][j]['valueOther'], valueCoding: {display: formDef[i]['items'][j]['value']['code']}};
+                    
+                }
+            }
+            return qr;
+        }
+
+</script>
+<script src="smart/fhir-client.js"></script>
+<script src="smart/get-data.js"></script>
+</body>
+</html>
