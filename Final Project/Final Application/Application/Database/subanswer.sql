@@ -27,19 +27,19 @@
 CREATE TABLE subanswer (
   subanswer_id int NOT NULL,
   content varchar(255) NOT NULL,
-  isCheck int NOT NULL,
-  isType int NOT NULL,
-  isRadio int NOT NULL,
+  ischeck int NOT NULL,
+  istype int NOT NULL,
+  isradio int NOT NULL,
   question_id int NOT NULL,
   answer_id int NOT NULL,
-  Code int NOT NULL
+  code int NOT NULL
 ) ;
 
 --
 -- Dumping data for table `subanswer`
 --
 
-INSERT INTO subanswer (subanswer_id, content, isCheck, isType, isRadio, question_id, answer_id, Code) VALUES
+INSERT INTO subanswer (subanswer_id, content, ischeck, istype, isradio, question_id, answer_id, code) VALUES
 (1, 'Asian Indian', 0, 0, 1, 8, 31, 41),
 (2, 'Chinese', 0, 0, 1, 8, 31, 42),
 (3, 'Filipino', 0, 0, 1, 8, 31, 43),

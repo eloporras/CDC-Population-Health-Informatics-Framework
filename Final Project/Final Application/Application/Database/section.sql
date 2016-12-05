@@ -1,18 +1,9 @@
--- phpMyAdmin SQL Dump
--- version 4.6.2
--- https://www.phpmyadmin.net/
 --
--- Host: localhost
--- Generation Time: Nov 09, 2016 at 04:02 AM
--- Server version: 10.1.13-MariaDB
--- PHP Version: 5.6.21
+-- PostgreSQL database dump
+--
 
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
-
+-- Dumped from database version 9.5.4
+-- Dumped by pg_dump version 9.6.1
 --
 -- Database: `survey`
 --
@@ -50,5 +41,3 @@ ALTER TABLE section
 --
 -- AUTO_INCREMENT for dumped tables
 --
-
-
